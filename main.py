@@ -2,49 +2,62 @@
 # Author: Fouzan Haider
 
 from chatbot import SupportChatbot
+from ollama_model import OllamaModel
 from order_tool import OrderLookup
 from stock_tool import StockLookup
 
-# Create a sample order database.
-ORDERS = {
+MODEL_NAME = "granite4.1:3b"
+
+INSTRUCTIONS = """
+You are Sunny, a support assistant for Bayside Outfitters.
+Answer in one short sentence.
+Store hours are 10 am to 7 pm every day.
+Returns are accepted within 30 days with a receipt.
+Shipping takes 3 to 5 business days.
+Sale items cannot be returned.
+Only state facts provided in these instructions.
+If you do not know an answer, say so and offer a human agent.
+
+ORDERS:
+A100: shipped
+A101: processing
+A102: delivered
+
+STOCK:
+Rain jacket: 12
+Day pack: 0
+Trail hat: 5
+"""
+
+orders = {
     "A100": "shipped",
     "A101": "processing",
     "A102": "delivered",
 }
 
-# Create a sample stock database.
-STOCK = {
+stock = {
     "rain jacket": 12,
-    "hoodie": 8,
+    "day pack": 0,
+    "trail hat": 5,
 }
 
-# Create the order lookup tool using the sample database.
-order_tool = OrderLookup(ORDERS)
-# Create the order lookup tool using the sample database.
-order_tool = OrderLookup(ORDERS)
+order_tool = OrderLookup(orders)
+stock_tool = StockLookup(stock)
+model = OllamaModel(MODEL_NAME)
 
-# ADD THIS HERE
-stock_tool = StockLookup(STOCK)
-
-# Create the chatbot and give it the order lookup tool.
 bot = SupportChatbot(
     "Sunny",
-    "You are a friendly support assistant for Bayside Outfitters.",
+    INSTRUCTIONS,
     order_tool,
     stock_tool,
+    model,
 )
 
-
-# Display instructions before starting the conversation.
-print("Type a message, or type quit to stop.")
-
-# Ask for the first user message.
-user_message = input("You: ")
-
-# Continue until the user types quit.
-while user_message != "quit":
-    print(f"{bot.name}: {bot.respond(user_message)}")
+while True:
     user_message = input("You: ")
 
-# Display the total number of messages recorded.
-print(f"Messages in this conversation: {len(bot.history)}")
+    if user_message.lower() in ["quit", "exit"]:
+        print("Sunny: Goodbye!")
+        break
+
+    print("Sunny:", bot.respond(user_message))

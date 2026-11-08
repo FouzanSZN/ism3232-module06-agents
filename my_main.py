@@ -3,8 +3,19 @@
 
 from my_assistant import MyAssistant
 from my_tool import AppointmentLookup
+from ollama_model import OllamaModel
 
-# Create a mock appointment schedule.
+MODEL_NAME = "granite4.1:3b"
+
+INSTRUCTIONS = """
+You are Fouzan's helpful appointment assistant.
+Answer in one short sentence.
+The office is open Monday through Friday.
+Appointments can be checked using the appointment schedule.
+If you do not know an answer, say so instead of guessing.
+Offer to connect the customer with the front desk when needed.
+"""
+
 APPOINTMENTS = {
     "Monday": ["9:00 am", "2:30 pm"],
     "Tuesday": ["10:00 am", "1:00 pm"],
@@ -13,29 +24,22 @@ APPOINTMENTS = {
     "Friday": ["10:30 am", "1:30 pm"],
 }
 
-# Create the appointment lookup tool.
 appointment_tool = AppointmentLookup(APPOINTMENTS)
+model = OllamaModel(MODEL_NAME)
 
-# Create Fouzan's appointment assistant.
 bot = MyAssistant(
     "Fouzan",
-    "You are a helpful appointment assistant.",
+    INSTRUCTIONS,
     appointment_tool,
+    model,
 )
 
-# Display instructions before starting the conversation.
 print("Welcome! Type a message, or type quit to stop.")
 
-# Ask for the first customer message.
 user_message = input("You: ")
 
-# Continue until the customer types quit.
 while user_message.lower() != "quit":
-    # Display Fouzan's response.
     print(f"{bot.name}: {bot.respond(user_message)}")
-
-    # Ask for the next customer message.
     user_message = input("You: ")
 
-# Display the total number of messages recorded.
 print(f"Messages in this conversation: {len(bot.history)}")

@@ -34,3 +34,7 @@ One risk of using real customer data is exposing private information, such as na
 - `my_assistant.py` - Contains Fouzan's appointment assistant.
 - `my_main.py` - Runs the appointment assistant.
 - `tests/` - Contains automated tests for the chatbot and appointment assistant.
+
+## Week 11: Local Model Integration
+
+This project integrates a local Ollama model using the granite4.1:3b model. The model answered general questions well when the instructions provided the necessary information, such as explaining the office schedule. It can also produce incorrect answers when a user provides misleading information, as demonstrated by the store-hours exercise. Important operations such as appointment availability and booking handoffs remain in Python code because they require reliable, verified information and human involvement. The mock model and automated tests allow the project to work without Ollama running.

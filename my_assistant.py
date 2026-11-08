@@ -3,79 +3,70 @@
 
 
 class MyAssistant:
-    """A mock appointment assistant that uses simple rules and a lookup tool."""
+    """An appointment assistant that uses rules, tools, and a model."""
 
-    def __init__(self, name, instructions, appointment_tool):
-        # Store the assistant's name.
+    def __init__(self, name, instructions, appointment_tool, model):
         self.name = name
-
-        # Store the instructions describing the assistant's role.
         self.instructions = instructions
-
-        # Store the appointment lookup tool.
         self.appointment_tool = appointment_tool
-
-        # Create a separate conversation history.
+        self.model = model
         self.history = []
 
     def respond(self, user_message):
-        """Record the user's message and return the assistant's reply."""
+        """Record the conversation and return the assistant's reply."""
 
-        # Record the customer's message in the conversation history.
         self.history.append({"role": "user", "content": user_message})
 
-        # Choose a reply based on the customer's message.
         reply = self.choose_reply(user_message)
 
-        # Record the assistant's reply.
         self.history.append({"role": "assistant", "content": reply})
 
-        # Return the reply.
         return reply
 
     def choose_reply(self, user_message):
-        """Choose a response using simple keyword rules."""
+        """Apply important rules before asking the model."""
 
-        # Convert the message to lowercase for matching.
         text = user_message.lower()
 
-        # Send appointment booking requests to a human.
+        # Booking requests must go to the human front desk.
         if "book" in text or "booking" in text or "schedule" in text:
             return (
                 "I'll pass your booking request to our front desk "
                 "so they can assist you."
             )
 
-        # Respond to greetings.
+        # Handle greetings directly.
         if "hello" in text or "hi" in text:
             return f"Hello! I'm {self.name}. I can help you check appointment availability."
 
-        # Check questions about available appointment times.
+        # Appointment questions must use the real lookup tool.
         if "available" in text or "appointment" in text or "times" in text:
             return self.appointment_reply(user_message)
 
-        # Give a safe response to questions the assistant cannot handle.
-        return (
-            "I'm not sure how to help with that. "
-            "I can check available appointment times."
-        )
+        # Send other questions to the model.
+        return self.model_reply()
+
+    def model_reply(self):
+        """Ask the model and provide a safe fallback if it fails."""
+
+        reply = self.model.reply(self.instructions, self.history)
+
+        if reply is None:
+            return "Sorry, I can't answer that right now. Please try again in a moment."
+
+        return reply
 
     def appointment_reply(self, user_message):
         """Use the appointment tool to check available times."""
 
-        # Find the weekday mentioned in the customer's message.
         day = self.appointment_tool.find_day(user_message)
 
-        # Ask which day the customer wants if none was identified.
         if day is None:
             return "Which day would you like to check?"
 
-        # Look up available appointment times for that day.
         times = self.appointment_tool.available_times(day)
 
-        # Handle days without available appointments.
         if not times:
             return f"Sorry, there are no available appointments on {day}."
 
-        # Return the available appointment times.
         return f"Available appointments on {day}: {', '.join(times)}."
